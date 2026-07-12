@@ -1,0 +1,55 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import { getProfile } from "@/lib/auth/dal";
+import { createClient } from "@/lib/supabase/server";
+
+export async function setAgentsPaused(paused: boolean) {
+  const profile = await getProfile();
+  if (profile.role !== "owner") {
+    throw new Error("Only the owner can use the kill switch.");
+  }
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("system_settings")
+    .update({
+      agents_paused: paused,
+      paused_at: paused ? new Date().toISOString() : null,
+      paused_by: paused ? profile.id : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", 1);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await supabase.from("agent_logs").insert({
+    agent: "owner",
+    unit: "manager",
+    action: paused ? "kill_switch_engaged" : "kill_switch_released",
+    level: paused ? "warn" : "info",
+    detail: { by: profile.email },
+  });
+
+  revalidatePath("/settings");
+  revalidatePath("/overview");
+}
+
+export async function updateFullName(fullName: string) {
+  const profile = await getProfile();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ full_name: fullName })
+    .eq("id", profile.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/settings");
+}
