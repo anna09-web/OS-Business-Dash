@@ -65,8 +65,8 @@ export default async function OverviewPage() {
             </ul>
           ) : (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              No agent activity yet — the Manager Agent and specialist agents
-              are built in Phase 2.
+              No agent activity yet — run <code>npm run worker</code> and trigger
+              an agent from the Reselling, Agency, or Trading page.
             </p>
           )}
         </CardContent>

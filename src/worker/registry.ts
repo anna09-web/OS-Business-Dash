@@ -3,6 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../types/database";
 import type { TaskRow } from "./logic";
 import { resellingHandlers } from "./reselling/handlers";
+import { agencyHandlers } from "./agency/handlers";
+import { tradingHandlers } from "./trading/handlers";
 
 export type ServiceClient = SupabaseClient<Database>;
 
@@ -29,6 +31,8 @@ export const REGISTRY: Record<string, RegistryEntry> = {
     handler: async () => ({ ok: true, checkedAt: new Date().toISOString() }),
   },
   ...resellingHandlers,
+  ...agencyHandlers,
+  ...tradingHandlers,
 };
 
 export function resolveHandler(unit: string, type: string): RegistryEntry | undefined {

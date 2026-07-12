@@ -1,7 +1,6 @@
-import { AlertOctagon, Bot } from "lucide-react";
+import { AlertOctagon } from "lucide-react";
 
 import { ApprovalActions, ApprovalDiff } from "@/components/dashboard/approval-actions";
-import { ComingSoon } from "@/components/dashboard/coming-soon";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -159,15 +158,10 @@ export default async function AgentsPage() {
         </CardContent>
       </Card>
 
-      <ComingSoon
-        icon={Bot}
-        phase="Phase 4-5 — Agency and Trading agents"
-        items={[
-          "Reselling's Lister, Repricer, and Support Agents are live — see the Reselling page",
-          "Outreach, Content, Dev/QA, Billing, Strategy Runner, and Risk Manager agents register themselves into the same registry as each unit is built",
-          "Until then, any task with no registered handler is escalated here automatically",
-        ]}
-      />
+      <p className="text-center text-xs text-muted-foreground">
+        {knownAgents.length} agents registered across Reselling, Agency, and Trading. Phase 6
+        (notifications, forecasting, reporting polish) is next — everything above is live.
+      </p>
     </div>
   );
 }

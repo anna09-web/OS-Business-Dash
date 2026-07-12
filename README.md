@@ -17,8 +17,10 @@ shadcn/ui-style components, backed by Supabase (Postgres + Auth + Realtime).
       retry-then-escalate, kill switch enforcement
 - [x] **Phase 3 — Reselling unit**: inventory + listings + Lister/Repricer/
       Support agents, approval queue wired to real side effects
-- [ ] Phase 4 — Agency unit
-- [ ] Phase 5 — Trading unit (paper only)
+- [x] **Phase 4 — Agency unit**: client pipeline, Outreach/Content/QA/Billing
+      agents, invoices
+- [x] **Phase 5 — Trading unit (paper only)**: risk rules, non-overridable
+      Risk Manager veto, trade journal, optional Alpaca paper integration
 - [ ] Phase 6 — Polish
 - [ ] Phase 7 — Live trading gate (opt-in, later)
 
@@ -58,6 +60,15 @@ role; reads are open to any authenticated user.
 `listings` (one row per marketplace posting of an item), and
 `buyer_messages`.
 
+`supabase/migrations/0004_agency.sql` adds `clients` (with a lead → proposal
+→ active → delivered → billed pipeline status), `deliverables`,
+`outreach_messages`, and `invoices`.
+
+`supabase/migrations/0005_trading.sql` adds `trading_risk_rules` (singleton:
+starting equity, max daily loss %, max drawdown %, max position size, max
+concurrent trades) and `trades` (the trade journal, including vetoed
+proposals).
+
 ## Manager Agent worker
 
 The Manager Agent runs as a standalone Node process, not inside the Next.js
@@ -89,11 +100,12 @@ Settings → API → service_role) — the worker uses it to bypass RLS, since
 it's a trusted backend process, not a user session. Never expose this key
 to the browser.
 
-Specialist agents (Lister, Repricer, Outreach, Strategy Runner, ...) don't
-exist yet — they're added in Phases 3-5 by registering handlers in
-`src/worker/registry.ts`. Until then, any task type without a handler gets
-escalated automatically, which is exactly what you'd want: nothing silently
-gets stuck.
+Every specialist agent (Lister, Repricer, Support, Outreach, Content, QA,
+Billing, Strategy Runner) registers its handler into
+`src/worker/registry.ts` — see the Reselling, Agency, and Trading sections
+below. Any task type without a registered handler still gets escalated
+automatically rather than getting stuck silently, which matters for future
+units.
 
 Pure decision logic (budget checks, retry-vs-escalate) is unit-tested
 without needing a live database:
@@ -133,3 +145,57 @@ Requires `ANTHROPIC_API_KEY` in `.env.local` for the Lister and Support
 Agents (the Repricer needs nothing beyond the database). Defaults to
 `claude-opus-4-8`; override with `CLAUDE_MODEL` if you want a cheaper model
 for this workload.
+
+## AI Agency unit
+
+- **Client pipeline** (`clients.status`): lead → proposal → active →
+  delivered → billed. The Agency page renders it as five columns; moving a
+  client is a plain dropdown, not drag-and-drop.
+- **Outreach Agent** (`src/worker/agency/outreach-agent.ts`) drafts a
+  prospecting email or DM for a lead, into the approval queue.
+- **Content Agent** (`content-agent.ts`) drafts a deliverable (copy, a
+  brief, a report) from a title + brief you set on the deliverable.
+- **Dev/QA Agent** (`qa-agent.ts`) is scoped down from the original spec —
+  it reads a code/text deliverable and drafts a report (issues, suggestions)
+  for you to review. It does not execute code, run tests, or open PRs; doing
+  that safely needs a sandboxed execution environment and per-client repo
+  access this build doesn't have yet.
+- **Billing Agent** (`billing-agent.ts`) drafts an overdue-payment reminder
+  once an invoice's due date has passed. Invoice creation and marking
+  sent/paid are plain owner actions — no agent or approval needed for those,
+  since nothing external happens until you manually email the client.
+
+All four write to the same `approvals` table as Reselling; approving
+applies the draft (fills in the outreach message, deliverable content, QA
+notes, or reminder text) via the same `decideApproval` action.
+
+## Day Trading unit (paper only)
+
+Framed the same way the spec insists on: paper by default, and the Risk
+Manager's veto is code, not a prompt, so nothing can talk it out of
+enforcing the limits.
+
+- **Risk Manager** (`src/worker/trading/risk-manager.ts`) is a pure,
+  unit-tested function — `evaluateTrade(rules, accountState, proposedTrade)`
+  — checked against max position size, max concurrent open trades, max
+  daily loss %, and max drawdown % from peak equity. Every proposed trade
+  goes through it before it's ever recorded as open.
+- **Strategy Runner** (`src/worker/trading/handlers.ts`): there's no
+  automated signal generation yet, because that needs your actual strategy
+  rules (trend-following, mean-reversion, whatever you trade) and a live
+  market feed, neither of which this build has. For now, proposing a trade
+  from the Trading page *is* the Strategy Runner's input — the agent's job
+  is running that proposal through the Risk Manager and journaling the
+  result (open or vetoed).
+- **Alpaca** (`alpaca-client.ts`) is optional and best-effort: if
+  `ALPACA_API_KEY_ID` / `ALPACA_SECRET_KEY` are set, an approved trade is
+  also submitted to Alpaca's paper endpoint; if not, it's still journaled
+  locally as a paper simulation. A failed Alpaca call never blocks or
+  retries the local trade record, since retrying could double-submit the
+  order at the broker.
+- **Reporter**: the end-of-day summary (win rate, average reward:risk,
+  drawdown vs. limit) is computed directly from the trade journal on the
+  Trading page — no separate scheduled job.
+- `system_settings.trading_mode` (Phase 1) still gates paper vs. live and
+  defaults to `paper`; there is no live-trading path in this build (Phase 7,
+  later, opt-in only).

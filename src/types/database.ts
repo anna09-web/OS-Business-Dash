@@ -8,6 +8,14 @@ export type InventoryStatus = "sourcing" | "listed" | "sold" | "delisted";
 export type Marketplace = "vinted" | "depop";
 export type ListingStatus = "draft" | "pending_review" | "active" | "sold" | "delisted";
 export type BuyerMessageStatus = "pending_draft" | "drafted" | "sent";
+export type ClientStatus = "lead" | "proposal" | "active" | "delivered" | "billed";
+export type DeliverableKind = "content" | "code" | "other";
+export type DeliverableStatus = "pending_draft" | "drafted" | "approved" | "delivered";
+export type OutreachChannel = "email" | "dm";
+export type OutreachStatus = "pending_draft" | "drafted" | "sent";
+export type InvoiceStatus = "draft" | "sent" | "overdue" | "paid";
+export type TradeSide = "long" | "short";
+export type TradeStatus = "open" | "closed" | "vetoed";
 
 export interface Database {
   public: {
@@ -295,6 +303,170 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["buyer_messages"]["Insert"]>;
+        Relationships: [];
+      };
+      clients: {
+        Row: {
+          id: string;
+          name: string;
+          contact_name: string | null;
+          contact_email: string | null;
+          status: ClientStatus;
+          value: number | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          contact_name?: string | null;
+          contact_email?: string | null;
+          status?: ClientStatus;
+          value?: number | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["clients"]["Insert"]>;
+        Relationships: [];
+      };
+      deliverables: {
+        Row: {
+          id: string;
+          client_id: string;
+          kind: DeliverableKind;
+          title: string;
+          brief: string | null;
+          draft_content: string | null;
+          qa_notes: string | null;
+          status: DeliverableStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          kind?: DeliverableKind;
+          title: string;
+          brief?: string | null;
+          draft_content?: string | null;
+          qa_notes?: string | null;
+          status?: DeliverableStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["deliverables"]["Insert"]>;
+        Relationships: [];
+      };
+      outreach_messages: {
+        Row: {
+          id: string;
+          client_id: string;
+          channel: OutreachChannel;
+          to_contact: string | null;
+          subject: string | null;
+          draft_body: string | null;
+          status: OutreachStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          channel?: OutreachChannel;
+          to_contact?: string | null;
+          subject?: string | null;
+          draft_body?: string | null;
+          status?: OutreachStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["outreach_messages"]["Insert"]>;
+        Relationships: [];
+      };
+      invoices: {
+        Row: {
+          id: string;
+          client_id: string;
+          amount: number;
+          currency: string;
+          status: InvoiceStatus;
+          due_date: string | null;
+          sent_at: string | null;
+          paid_at: string | null;
+          reminder_draft: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          amount: number;
+          currency?: string;
+          status?: InvoiceStatus;
+          due_date?: string | null;
+          sent_at?: string | null;
+          paid_at?: string | null;
+          reminder_draft?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["invoices"]["Insert"]>;
+        Relationships: [];
+      };
+      trading_risk_rules: {
+        Row: {
+          id: number;
+          starting_equity: number;
+          max_daily_loss_pct: number;
+          max_drawdown_pct: number;
+          max_position_size: number;
+          max_concurrent_trades: number;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["trading_risk_rules"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["trading_risk_rules"]["Row"]>;
+        Relationships: [];
+      };
+      trades: {
+        Row: {
+          id: string;
+          symbol: string;
+          side: TradeSide;
+          quantity: number;
+          entry_price: number;
+          exit_price: number | null;
+          entry_at: string;
+          exit_at: string | null;
+          status: TradeStatus;
+          rationale_entry: string | null;
+          rationale_exit: string | null;
+          pnl: number | null;
+          veto_reason: string | null;
+          alpaca_order_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          symbol: string;
+          side: TradeSide;
+          quantity: number;
+          entry_price: number;
+          exit_price?: number | null;
+          entry_at?: string;
+          exit_at?: string | null;
+          status?: TradeStatus;
+          rationale_entry?: string | null;
+          rationale_exit?: string | null;
+          pnl?: number | null;
+          veto_reason?: string | null;
+          alpaca_order_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["trades"]["Insert"]>;
         Relationships: [];
       };
     };

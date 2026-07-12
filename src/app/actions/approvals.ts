@@ -59,6 +59,54 @@ async function applyApproval(supabase: SupabaseServerClient, approval: Approval)
         .eq("id", buyer_message_id);
       break;
     }
+    case "outreach_draft": {
+      const { outreach_message_id, subject, body } = after as {
+        outreach_message_id: string;
+        subject: string;
+        body: string;
+      };
+      await supabase
+        .from("outreach_messages")
+        .update({ subject, draft_body: body, status: "drafted", updated_at: now })
+        .eq("id", outreach_message_id);
+      break;
+    }
+    case "deliverable_draft": {
+      const { deliverable_id, content } = after as { deliverable_id: string; content: string };
+      await supabase
+        .from("deliverables")
+        .update({ draft_content: content, status: "drafted", updated_at: now })
+        .eq("id", deliverable_id);
+      break;
+    }
+    case "qa_report": {
+      const { deliverable_id, summary, issues, suggestions } = after as {
+        deliverable_id: string;
+        summary: string;
+        issues: string[];
+        suggestions: string[];
+      };
+      const notes = [
+        `Summary: ${summary}`,
+        issues.length ? `Issues:\n${issues.map((i) => `- ${i}`).join("\n")}` : "No issues found.",
+        suggestions.length ? `Suggestions:\n${suggestions.map((s) => `- ${s}`).join("\n")}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+      await supabase
+        .from("deliverables")
+        .update({ qa_notes: notes, updated_at: now })
+        .eq("id", deliverable_id);
+      break;
+    }
+    case "invoice_reminder_draft": {
+      const { invoice_id, reminder } = after as { invoice_id: string; reminder: string };
+      await supabase
+        .from("invoices")
+        .update({ reminder_draft: reminder, updated_at: now })
+        .eq("id", invoice_id);
+      break;
+    }
     default:
       // Unknown kind: nothing to apply automatically. The decision is still
       // recorded, but a human should follow up manually.
@@ -110,5 +158,6 @@ export async function decideApproval(approvalId: string, decision: "approved" | 
 
   revalidatePath("/agents");
   revalidatePath("/reselling");
+  revalidatePath("/agency");
   revalidatePath("/overview");
 }
