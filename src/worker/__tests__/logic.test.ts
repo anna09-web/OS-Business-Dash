@@ -8,7 +8,7 @@ test("resolveHandler finds the registered manager health_check handler", async (
   const entry = resolveHandler("manager", "health_check");
   assert.ok(entry);
   assert.equal(entry.agent, "manager");
-  const result = await entry.handler({} as never);
+  const result = await entry.handler({} as never, {} as never);
   assert.equal(result.ok, true);
 });
 

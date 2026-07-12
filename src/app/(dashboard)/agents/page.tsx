@@ -1,13 +1,16 @@
 import { AlertOctagon, Bot } from "lucide-react";
 
+import { ApprovalActions, ApprovalDiff } from "@/components/dashboard/approval-actions";
 import { ComingSoon } from "@/components/dashboard/coming-soon";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { REGISTRY } from "@/worker/registry";
 
 export default async function AgentsPage() {
+  const profile = await getProfile();
   const supabase = await createClient();
 
   const [
@@ -19,7 +22,7 @@ export default async function AgentsPage() {
   ] = await Promise.all([
     supabase
       .from("approvals")
-      .select("id, unit, kind, title, requested_by, created_at")
+      .select("id, unit, kind, title, requested_by, before, after, created_at")
       .eq("status", "pending")
       .order("created_at", { ascending: false }),
     supabase
@@ -97,19 +100,18 @@ export default async function AgentsPage() {
           {pendingApprovals && pendingApprovals.length > 0 ? (
             <ul className="divide-y divide-border">
               {pendingApprovals.map((approval) => (
-                <li
-                  key={approval.id}
-                  className="flex items-center justify-between py-2.5 text-sm"
-                >
-                  <span>
-                    <span className="font-medium">{approval.title}</span>{" "}
-                    <span className="text-muted-foreground">
-                      · {approval.unit} · requested by {approval.requested_by}
-                    </span>
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(approval.created_at).toLocaleString()}
-                  </span>
+                <li key={approval.id} className="flex items-start justify-between gap-3 py-3 text-sm">
+                  <div className="min-w-0 flex-1">
+                    <p>
+                      <span className="font-medium">{approval.title}</span>{" "}
+                      <span className="text-muted-foreground">
+                        · {approval.unit} · requested by {approval.requested_by} ·{" "}
+                        {new Date(approval.created_at).toLocaleString()}
+                      </span>
+                    </p>
+                    <ApprovalDiff before={approval.before} after={approval.after} />
+                  </div>
+                  {profile.role === "owner" && <ApprovalActions approvalId={approval.id} />}
                 </li>
               ))}
             </ul>
@@ -159,10 +161,10 @@ export default async function AgentsPage() {
 
       <ComingSoon
         icon={Bot}
-        phase="Phase 3-5 — specialist agents"
+        phase="Phase 4-5 — Agency and Trading agents"
         items={[
-          "The Manager Agent's task queue, budget enforcement, and retry-then-escalate loop are live (run it with `npm run worker`)",
-          "Lister, Repricer, Outreach, Content, Dev/QA, Billing, Strategy Runner, and Risk Manager agents register themselves into the same registry as each unit is built",
+          "Reselling's Lister, Repricer, and Support Agents are live — see the Reselling page",
+          "Outreach, Content, Dev/QA, Billing, Strategy Runner, and Risk Manager agents register themselves into the same registry as each unit is built",
           "Until then, any task with no registered handler is escalated here automatically",
         ]}
       />

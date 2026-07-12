@@ -165,7 +165,7 @@ async function processTask(supabase: Client, task: TaskRow) {
   });
 
   try {
-    const result = await withTimeout(entry.handler(task), TASK_TIMEOUT_MS);
+    const result = await withTimeout(entry.handler(task, supabase), TASK_TIMEOUT_MS);
 
     await supabase
       .from("tasks")

@@ -15,7 +15,8 @@ shadcn/ui-style components, backed by Supabase (Postgres + Auth + Realtime).
 - [x] **Phase 1 — Foundation**: auth, DB schema, dashboard shell, RBAC
 - [x] **Phase 2 — Manager Agent + task queue**: worker process, budget caps,
       retry-then-escalate, kill switch enforcement
-- [ ] Phase 3 — Reselling unit
+- [x] **Phase 3 — Reselling unit**: inventory + listings + Lister/Repricer/
+      Support agents, approval queue wired to real side effects
 - [ ] Phase 4 — Agency unit
 - [ ] Phase 5 — Trading unit (paper only)
 - [ ] Phase 6 — Polish
@@ -52,6 +53,10 @@ role; reads are open to any authenticated user.
 
 `supabase/migrations/0002_manager_agent.sql` adds `agent_budgets`
 (per-agent daily action/token caps) and a `retry_count` column on `tasks`.
+
+`supabase/migrations/0003_reselling.sql` adds `suppliers`, `inventory_items`,
+`listings` (one row per marketplace posting of an item), and
+`buyer_messages`.
 
 ## Manager Agent worker
 
@@ -97,9 +102,34 @@ without needing a live database:
 npm run test:worker
 ```
 
-## A note on marketplaces
+## Reselling unit
 
 Vinted and Depop don't publish an official seller API the way eBay/Amazon/
-Shopify do, so the Reselling unit's inventory sync (Phase 3) will need a
-different approach than the original spec assumed — most likely manual/CSV
-import rather than a live API integration.
+Shopify do, so nothing here calls out to a marketplace directly:
+
+- **Inventory** is managed in-app (manual entry or CSV import/export) rather
+  than synced live from a marketplace.
+- **Lister Agent** (`src/worker/reselling/lister-agent.ts`) drafts a title,
+  description, category, price, and keywords from an inventory item —
+  optionally reading a product photo (vision) — using the Claude API, and
+  writes the draft to the approval queue. Approving it fills in the listing
+  fields; you then copy them onto Vinted/Depop yourself and click "Mark
+  active" with the live URL.
+- **Repricer Agent** (`src/worker/reselling/pricing.ts`) is pure rule-based
+  logic, no LLM: given a manually-entered competitor price, it suggests a
+  new price bounded by a minimum margin over cost and a maximum discount per
+  adjustment, and puts the suggestion in the approval queue.
+- **Support Agent** (`src/worker/reselling/support-agent.ts`) drafts a reply
+  to a buyer message you log manually, and flags negative sentiment for you
+  to review before sending — there's no live inbox integration to send it
+  automatically.
+
+All three write to the same `approvals` table from Phase 1; approving or
+rejecting from the Agents or Reselling page (`src/app/actions/approvals.ts`)
+applies the change immediately — nothing here auto-publishes anything to a
+marketplace.
+
+Requires `ANTHROPIC_API_KEY` in `.env.local` for the Lister and Support
+Agents (the Repricer needs nothing beyond the database). Defaults to
+`claude-opus-4-8`; override with `CLAUDE_MODEL` if you want a cheaper model
+for this workload.
