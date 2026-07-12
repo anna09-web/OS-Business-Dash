@@ -1,6 +1,5 @@
-import { AlertOctagon } from "lucide-react";
-
-import { ApprovalActions, ApprovalDiff } from "@/components/dashboard/approval-actions";
+import { LiveApprovalQueue } from "@/components/dashboard/live-approval-queue";
+import { LiveEscalatedTasks } from "@/components/dashboard/live-escalated-tasks";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +20,7 @@ export default async function AgentsPage() {
   ] = await Promise.all([
     supabase
       .from("approvals")
-      .select("id, unit, kind, title, requested_by, before, after, created_at")
+      .select("id, unit, kind, title, requested_by, before, after, status, created_at")
       .eq("status", "pending")
       .order("created_at", { ascending: false }),
     supabase
@@ -96,29 +95,10 @@ export default async function AgentsPage() {
           <CardTitle>Approval queue</CardTitle>
         </CardHeader>
         <CardContent>
-          {pendingApprovals && pendingApprovals.length > 0 ? (
-            <ul className="divide-y divide-border">
-              {pendingApprovals.map((approval) => (
-                <li key={approval.id} className="flex items-start justify-between gap-3 py-3 text-sm">
-                  <div className="min-w-0 flex-1">
-                    <p>
-                      <span className="font-medium">{approval.title}</span>{" "}
-                      <span className="text-muted-foreground">
-                        · {approval.unit} · requested by {approval.requested_by} ·{" "}
-                        {new Date(approval.created_at).toLocaleString()}
-                      </span>
-                    </p>
-                    <ApprovalDiff before={approval.before} after={approval.after} />
-                  </div>
-                  {profile.role === "owner" && <ApprovalActions approvalId={approval.id} />}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              Nothing waiting on you right now.
-            </p>
-          )}
+          <LiveApprovalQueue
+            initialApprovals={pendingApprovals ?? []}
+            isOwner={profile.role === "owner"}
+          />
         </CardContent>
       </Card>
 
@@ -127,34 +107,7 @@ export default async function AgentsPage() {
           <CardTitle>Escalated tasks</CardTitle>
         </CardHeader>
         <CardContent>
-          {escalatedTasks && escalatedTasks.length > 0 ? (
-            <ul className="divide-y divide-border">
-              {escalatedTasks.map((task) => (
-                <li key={task.id} className="flex items-start gap-2 py-2.5 text-sm">
-                  <AlertOctagon className="mt-0.5 size-4 shrink-0 text-destructive" />
-                  <div className="min-w-0 flex-1">
-                    <p>
-                      <span className="font-medium">
-                        {task.unit}:{task.type}
-                      </span>{" "}
-                      <span className="text-muted-foreground">
-                        · {task.retry_count} attempt(s)
-                      </span>
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">{task.error}</p>
-                  </div>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {new Date(task.updated_at).toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              No escalated tasks. The Manager Agent retries once before
-              escalating a failed task here.
-            </p>
-          )}
+          <LiveEscalatedTasks initialTasks={escalatedTasks ?? []} />
         </CardContent>
       </Card>
 

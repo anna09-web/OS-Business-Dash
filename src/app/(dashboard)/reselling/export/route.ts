@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-
+import { csvResponse, toCsv } from "@/lib/csv";
 import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,10 +13,6 @@ const HEADER = [
   "reorder_point",
   "status",
 ];
-
-function escapeCsv(value: string): string {
-  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-}
 
 export async function GET() {
   await getProfile();
@@ -40,12 +35,5 @@ export async function GET() {
     item.status,
   ]);
 
-  const csv = [HEADER, ...rows].map((row) => row.map(escapeCsv).join(",")).join("\n");
-
-  return new NextResponse(csv, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": "attachment; filename=inventory.csv",
-    },
-  });
+  return csvResponse(toCsv(HEADER, rows), "inventory.csv");
 }

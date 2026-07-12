@@ -21,7 +21,8 @@ shadcn/ui-style components, backed by Supabase (Postgres + Auth + Realtime).
       agents, invoices
 - [x] **Phase 5 — Trading unit (paper only)**: risk rules, non-overridable
       Risk Manager veto, trade journal, optional Alpaca paper integration
-- [ ] Phase 6 — Polish
+- [x] **Phase 6 — Polish**: live realtime updates, pending-approvals
+      notification badge, CSV report exports
 - [ ] Phase 7 — Live trading gate (opt-in, later)
 
 ## Getting started
@@ -68,6 +69,12 @@ role; reads are open to any authenticated user.
 starting equity, max daily loss %, max drawdown %, max position size, max
 concurrent trades) and `trades` (the trade journal, including vetoed
 proposals).
+
+`supabase/migrations/0006_realtime.sql` adds `agent_logs`, `approvals`, and
+`tasks` to the `supabase_realtime` publication, so the live UI updates in
+Phase 6 actually receive `postgres_changes` events. Row-level security still
+governs which rows a given client receives over the socket, same as any
+other read.
 
 ## Manager Agent worker
 
@@ -199,3 +206,22 @@ enforcing the limits.
 - `system_settings.trading_mode` (Phase 1) still gates paper vs. live and
   defaults to `paper`; there is no live-trading path in this build (Phase 7,
   later, opt-in only).
+
+## Phase 6 — Polish
+
+- **Live updates via Supabase Realtime**: the Overview activity feed, and
+  the Agents page's approval queue and escalated-tasks list, subscribe to
+  `postgres_changes` and update without a manual refresh — this was called
+  out in the original spec's UI/UX section but not actually wired up until
+  now. A small badge in the top bar shows a live pending-approvals count
+  across all three units, visible from every page.
+- **CSV report exports**: alongside the existing inventory export, added a
+  sold-listings P/L export (Reselling), an invoices export (Agency), and a
+  full trade-journal export (Trading).
+- **Deliberately not built**: a demand-forecasting chart (Reselling's
+  "extra feature") and a real email/Slack approval digest (from the
+  Manager Agent spec). Both need data or infrastructure this build doesn't
+  have yet — forecasting needs real sales history to forecast from (there
+  isn't any yet, so a chart would just be empty), and a digest needs an
+  email/Slack service credential nobody's configured. The in-app realtime
+  badge covers the same "don't miss an approval" need without either.

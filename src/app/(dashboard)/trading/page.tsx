@@ -312,8 +312,13 @@ export default async function TradingPage() {
       )}
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Trade journal</CardTitle>
+          {isOwner && allTrades.length > 0 && (
+            <a href="/trading/export" className="text-xs text-primary hover:underline">
+              Export CSV
+            </a>
+          )}
         </CardHeader>
         <CardContent>
           {closedTrades.length > 0 ? (

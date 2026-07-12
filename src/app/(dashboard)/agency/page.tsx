@@ -362,8 +362,13 @@ export default async function AgencyPage() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Invoices</CardTitle>
+          {isOwner && allInvoices.length > 0 && (
+            <a href="/agency/export" className="text-xs text-primary hover:underline">
+              Export CSV
+            </a>
+          )}
         </CardHeader>
         <CardContent>
           {allInvoices.length > 0 ? (

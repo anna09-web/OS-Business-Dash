@@ -111,8 +111,13 @@ export default async function ResellingPage() {
       </div>
 
       <Card className="mb-6">
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Profit &amp; loss</CardTitle>
+          {isOwner && soldListings.length > 0 && (
+            <a href="/reselling/export/pl" className="text-xs text-primary hover:underline">
+              Export CSV
+            </a>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
