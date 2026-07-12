@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "worker": "tsx --env-file-if-exists=.env.local src/worker/manager-agent.ts",
+    "test:worker": "tsx --test src/worker/__tests__/logic.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.2.2",
@@ -35,6 +37,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
+    "tsx": "^4.23.0",
     "typescript": "^5"
   }
 }

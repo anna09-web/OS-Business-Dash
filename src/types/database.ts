@@ -56,6 +56,7 @@ export interface Database {
           payload: Record<string, unknown>;
           result: Record<string, unknown> | null;
           error: string | null;
+          retry_count: number;
           due_at: string | null;
           created_at: string;
           updated_at: string;
@@ -70,6 +71,7 @@ export interface Database {
           payload?: Record<string, unknown>;
           result?: Record<string, unknown> | null;
           error?: string | null;
+          retry_count?: number;
           due_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -133,6 +135,30 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["approvals"]["Insert"]>;
+        Relationships: [];
+      };
+      agent_budgets: {
+        Row: {
+          agent: string;
+          unit: Unit;
+          max_actions_per_day: number | null;
+          actions_today: number;
+          max_tokens_per_day: number | null;
+          tokens_today: number;
+          period_start: string;
+          updated_at: string;
+        };
+        Insert: {
+          agent: string;
+          unit: Unit;
+          max_actions_per_day?: number | null;
+          actions_today?: number;
+          max_tokens_per_day?: number | null;
+          tokens_today?: number;
+          period_start?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["agent_budgets"]["Insert"]>;
         Relationships: [];
       };
     };
