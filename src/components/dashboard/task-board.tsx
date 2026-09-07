@@ -7,6 +7,7 @@ import { deleteTask, setTaskStatus } from "@/app/actions/tasks";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { formatBerlinDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Database, TaskStatus, UserRole } from "@/types/database";
 
@@ -66,7 +67,7 @@ export function TaskBoard({ tasks, role }: { tasks: Task[]; role: UserRole }) {
           </span>
           {task.due_date && (
             <span className="hidden text-xs text-muted-foreground sm:inline">
-              {new Date(task.due_date).toLocaleDateString()}
+              {formatBerlinDate(task.due_date)}
             </span>
           )}
           <Badge variant={PRIORITY_VARIANT[task.priority]} className="capitalize">

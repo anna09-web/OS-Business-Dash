@@ -5,12 +5,13 @@ import * as z from "zod";
 
 import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
-import type { TaskPriority, TaskStatus } from "@/types/database";
+import type { BusinessAreaSlug, TaskPriority, TaskStatus } from "@/types/database";
 
 const createTaskSchema = z.object({
   title: z.string().trim().min(1, "Title is required."),
   priority: z.enum(["low", "medium", "high"]),
   due_date: z.string().optional(),
+  business_area: z.string().optional(),
 });
 
 export async function createTask(formData: FormData) {
@@ -23,6 +24,7 @@ export async function createTask(formData: FormData) {
     title: formData.get("title"),
     priority: formData.get("priority") ?? "medium",
     due_date: formData.get("due_date") || undefined,
+    business_area: formData.get("business_area") || undefined,
   });
 
   if (!parsed.success) {
@@ -34,6 +36,7 @@ export async function createTask(formData: FormData) {
     title: parsed.data.title,
     priority: parsed.data.priority as TaskPriority,
     due_date: parsed.data.due_date ?? null,
+    business_area: (parsed.data.business_area as BusinessAreaSlug | undefined) ?? null,
     created_by: profile.id,
   });
 
@@ -43,6 +46,9 @@ export async function createTask(formData: FormData) {
 
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
+  if (parsed.data.business_area) {
+    revalidatePath(`/business/${parsed.data.business_area}`);
+  }
 }
 
 export async function setTaskStatus(id: string, status: TaskStatus) {
@@ -63,6 +69,7 @@ export async function setTaskStatus(id: string, status: TaskStatus) {
 
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
+  revalidatePath("/business/[slug]", "page");
 }
 
 export async function deleteTask(id: string) {
@@ -80,4 +87,5 @@ export async function deleteTask(id: string) {
 
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
+  revalidatePath("/business/[slug]", "page");
 }

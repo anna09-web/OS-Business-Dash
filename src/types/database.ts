@@ -2,6 +2,12 @@ export type UserRole = "owner" | "viewer";
 export type TaskStatus = "todo" | "in_progress" | "done";
 export type TaskPriority = "low" | "medium" | "high";
 export type TransactionType = "income" | "expense";
+export type BusinessAreaSlug =
+  | "dropshipping"
+  | "crypto_trading"
+  | "personal_brand"
+  | "courses"
+  | "startup";
 
 export interface Database {
   public: {
@@ -36,10 +42,31 @@ export interface Database {
           automations_paused: boolean;
           paused_at: string | null;
           paused_by: string | null;
+          revenue_goal: number;
           updated_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["system_settings"]["Row"]>;
         Update: Partial<Database["public"]["Tables"]["system_settings"]["Row"]>;
+        Relationships: [];
+      };
+      business_areas: {
+        Row: {
+          slug: BusinessAreaSlug;
+          name: string;
+          locked: boolean;
+          unlock_at: string | null;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          slug: BusinessAreaSlug;
+          name: string;
+          locked?: boolean;
+          unlock_at?: string | null;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["business_areas"]["Insert"]>;
         Relationships: [];
       };
       tasks: {
@@ -50,6 +77,7 @@ export interface Database {
           status: TaskStatus;
           priority: TaskPriority;
           due_date: string | null;
+          business_area: BusinessAreaSlug | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -61,6 +89,7 @@ export interface Database {
           status?: TaskStatus;
           priority?: TaskPriority;
           due_date?: string | null;
+          business_area?: BusinessAreaSlug | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -76,6 +105,7 @@ export interface Database {
           description: string | null;
           amount: number;
           occurred_on: string;
+          business_area: BusinessAreaSlug | null;
           created_by: string | null;
           created_at: string;
         };
@@ -86,6 +116,7 @@ export interface Database {
           description?: string | null;
           amount: number;
           occurred_on?: string;
+          business_area?: BusinessAreaSlug | null;
           created_by?: string | null;
           created_at?: string;
         };

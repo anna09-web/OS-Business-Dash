@@ -7,8 +7,9 @@ import { createTransaction } from "@/app/actions/transactions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import type { BusinessAreaSlug } from "@/types/database";
 
-export function AddTransactionForm() {
+export function AddTransactionForm({ businessArea }: { businessArea?: BusinessAreaSlug }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +28,7 @@ export function AddTransactionForm() {
 
   return (
     <form ref={formRef} action={onSubmit} className="flex flex-col gap-2">
+      {businessArea && <input type="hidden" name="business_area" value={businessArea} />}
       <div className="flex flex-col gap-2 sm:flex-row">
         <Select name="type" defaultValue="income" className="sm:w-32" disabled={pending}>
           <option value="income">Income</option>

@@ -6,13 +6,11 @@ import { Trash2 } from "lucide-react";
 import { deleteTransaction } from "@/app/actions/transactions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatBerlinDate, formatEUR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Database, UserRole } from "@/types/database";
 
 type Transaction = Database["public"]["Tables"]["transactions"]["Row"];
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
 
 export function TransactionTable({
   transactions,
@@ -56,17 +54,15 @@ export function TransactionTable({
               <span className="text-muted-foreground"> · {tx.description}</span>
             )}
           </span>
-          <span className="text-xs text-muted-foreground">
-            {new Date(tx.occurred_on).toLocaleDateString()}
-          </span>
+          <span className="text-xs text-muted-foreground">{formatBerlinDate(tx.occurred_on)}</span>
           <span
             className={cn(
-              "w-24 shrink-0 text-right font-medium tabular-nums",
+              "w-28 shrink-0 text-right font-medium tabular-nums",
               tx.type === "income" ? "text-success" : "text-destructive"
             )}
           >
             {tx.type === "income" ? "+" : "-"}
-            {formatCurrency(tx.amount)}
+            {formatEUR(tx.amount)}
           </span>
           {role === "owner" && (
             <Button

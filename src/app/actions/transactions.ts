@@ -5,7 +5,7 @@ import * as z from "zod";
 
 import { getProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
-import type { TransactionType } from "@/types/database";
+import type { BusinessAreaSlug, TransactionType } from "@/types/database";
 
 const createTransactionSchema = z.object({
   type: z.enum(["income", "expense"]),
@@ -13,6 +13,7 @@ const createTransactionSchema = z.object({
   description: z.string().optional(),
   amount: z.coerce.number().positive("Amount must be greater than zero."),
   occurred_on: z.string().optional(),
+  business_area: z.string().optional(),
 });
 
 export async function createTransaction(formData: FormData) {
@@ -27,6 +28,7 @@ export async function createTransaction(formData: FormData) {
     description: formData.get("description") || undefined,
     amount: formData.get("amount"),
     occurred_on: formData.get("occurred_on") || undefined,
+    business_area: formData.get("business_area") || undefined,
   });
 
   if (!parsed.success) {
@@ -40,6 +42,7 @@ export async function createTransaction(formData: FormData) {
     description: parsed.data.description ?? null,
     amount: parsed.data.amount,
     occurred_on: parsed.data.occurred_on ?? undefined,
+    business_area: (parsed.data.business_area as BusinessAreaSlug | undefined) ?? null,
     created_by: profile.id,
   });
 
@@ -49,6 +52,9 @@ export async function createTransaction(formData: FormData) {
 
   revalidatePath("/finances");
   revalidatePath("/dashboard");
+  if (parsed.data.business_area) {
+    revalidatePath(`/business/${parsed.data.business_area}`);
+  }
 }
 
 export async function deleteTransaction(id: string) {
@@ -66,4 +72,5 @@ export async function deleteTransaction(id: string) {
 
   revalidatePath("/finances");
   revalidatePath("/dashboard");
+  revalidatePath("/business/[slug]", "page");
 }
