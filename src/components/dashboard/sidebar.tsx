@@ -24,7 +24,7 @@ export function Sidebar({ areas }: { areas: BusinessArea[] }) {
   return (
     <aside className="hidden w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex">
       <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-5">
-        <span className="size-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+        <span className="size-2 rounded-full bg-primary" />
         <span className="text-sm font-semibold tracking-wide text-sidebar-foreground">
           BUSINESS OS
         </span>

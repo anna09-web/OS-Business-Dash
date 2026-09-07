@@ -5,7 +5,7 @@ import { SignupForm } from "./signup-form";
 export default function SignupPage() {
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
-      <div className="glass w-full max-w-sm rounded-xl p-8">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-8">
         <div className="mb-6 text-center">
           <p className="text-xs font-medium tracking-[0.2em] text-primary uppercase">
             Business OS

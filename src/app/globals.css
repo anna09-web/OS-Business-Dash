@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -115,15 +114,5 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image:
-      radial-gradient(circle at 15% 0%, oklch(0.24 0.05 210 / 35%), transparent 45%),
-      radial-gradient(circle at 85% 100%, oklch(0.22 0.05 260 / 30%), transparent 50%);
-    background-attachment: fixed;
-  }
-}
-
-@layer utilities {
-  .glass {
-    @apply bg-card/60 backdrop-blur-xl border border-border;
   }
 }
