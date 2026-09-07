@@ -1,24 +1,22 @@
 # Business OS
 
-A command-center dashboard for running three businesses from one login:
-**Reselling** (Vinted/Depop), **AI Agency**, and **Day Trading** (paper-first).
-A Manager Agent (Phase 2+) routes tasks to specialist agents; every
-financial or client-facing action goes through a human approval queue.
+A general-purpose business dashboard: track revenue and expenses, manage
+tasks, and control access — all from one login.
 
 ## Stack
 
 Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + hand-built
 shadcn/ui-style components, backed by Supabase (Postgres + Auth + Realtime).
 
-## Build status
+## Features
 
-- [x] **Phase 1 — Foundation**: auth, DB schema, dashboard shell, RBAC
-- [ ] Phase 2 — Manager Agent + task queue
-- [ ] Phase 3 — Reselling unit
-- [ ] Phase 4 — Agency unit
-- [ ] Phase 5 — Trading unit (paper only)
-- [ ] Phase 6 — Polish
-- [ ] Phase 7 — Live trading gate (opt-in, later)
+- **Dashboard** — revenue, expenses, net profit, and open tasks at a glance.
+- **Finances** — an income/expense ledger with a running total.
+- **Tasks** — a shared to-do list with priority and due dates.
+- **Settings** — account info, two-factor authentication, and a global
+  automations kill switch.
+- **RBAC** — the first account to sign up becomes the **Owner** (read/write);
+  every account after that is a read-only **Viewer** until promoted.
 
 ## Getting started
 
@@ -26,8 +24,8 @@ shadcn/ui-style components, backed by Supabase (Postgres + Auth + Realtime).
 2. Copy `.env.local.example` to `.env.local` and fill in
    `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` from
    Project Settings → API.
-3. Run the migration in `supabase/migrations/0001_foundation.sql` against
-   your project (via the SQL editor or the Supabase CLI).
+3. Run the migrations in `supabase/migrations/` in order (via the SQL editor
+   or the Supabase CLI): `0001_foundation.sql` then `0002_general_dashboard.sql`.
 4. Enable **Email** auth and, if you want the login form to also support an
    authenticator app, enable **TOTP** under Auth → MFA in the dashboard —
    the Settings page has a 2FA enrollment flow built in.
@@ -38,20 +36,10 @@ shadcn/ui-style components, backed by Supabase (Postgres + Auth + Realtime).
    npm run dev
    ```
 
-The first account you sign up with becomes the **Owner**; every account
-after that is a read-only **Viewer** until the owner promotes it.
-
 ## Schema
 
-`supabase/migrations/0001_foundation.sql` creates the shared foundation used
-by every unit: `profiles` (RBAC), `system_settings` (kill switch + trading
-mode), `tasks`, `agent_logs` (append-only audit trail), and `approvals`
-(human-in-the-loop gate). Row-level security restricts writes to the owner
-role; reads are open to any authenticated user.
-
-## A note on marketplaces
-
-Vinted and Depop don't publish an official seller API the way eBay/Amazon/
-Shopify do, so the Reselling unit's inventory sync (Phase 3) will need a
-different approach than the original spec assumed — most likely manual/CSV
-import rather than a live API integration.
+`supabase/migrations/0001_foundation.sql` creates `profiles` (RBAC) and
+`system_settings` (the automations kill switch). `0002_general_dashboard.sql`
+adds `tasks` and `transactions`, the tables the dashboard reads from. Row-level
+security restricts writes to the owner role; reads are open to any
+authenticated user.

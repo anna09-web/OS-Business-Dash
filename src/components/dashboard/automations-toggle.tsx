@@ -3,10 +3,10 @@
 import { useState, useTransition } from "react";
 import { AlertTriangle } from "lucide-react";
 
-import { setAgentsPaused } from "@/app/actions/settings";
+import { setAutomationsPaused } from "@/app/actions/settings";
 import { Button } from "@/components/ui/button";
 
-export function KillSwitch({ initialPaused }: { initialPaused: boolean }) {
+export function AutomationsToggle({ initialPaused }: { initialPaused: boolean }) {
   const [paused, setPaused] = useState(initialPaused);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +16,7 @@ export function KillSwitch({ initialPaused }: { initialPaused: boolean }) {
     const next = !paused;
     startTransition(async () => {
       try {
-        await setAgentsPaused(next);
+        await setAutomationsPaused(next);
         setPaused(next);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to update.");
@@ -31,8 +31,8 @@ export function KillSwitch({ initialPaused }: { initialPaused: boolean }) {
           <AlertTriangle className="size-4 text-destructive" />
           <span>
             {paused
-              ? "All agents are paused."
-              : "Agents run normally. This immediately halts every unit, including trading."}
+              ? "All automations are paused."
+              : "Automations run normally. This immediately halts every connected automation."}
           </span>
         </div>
         <Button
@@ -41,7 +41,7 @@ export function KillSwitch({ initialPaused }: { initialPaused: boolean }) {
           disabled={pending}
           onClick={toggle}
         >
-          {paused ? "Resume agents" : "Pause all agents"}
+          {paused ? "Resume automations" : "Pause all automations"}
         </Button>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}

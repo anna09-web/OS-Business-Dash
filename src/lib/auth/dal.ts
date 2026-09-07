@@ -43,7 +43,7 @@ export const getProfile = cache(async (): Promise<Profile> => {
 export async function requireRole(role: UserRole) {
   const profile = await getProfile();
   if (profile.role !== role) {
-    redirect("/overview");
+    redirect("/dashboard");
   }
   return profile;
 }

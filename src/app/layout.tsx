@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Business OS",
-  description: "Command center for Reselling, AI Agency, and Day Trading.",
+  description: "A general-purpose dashboard for running your business.",
 };
 
 export default function RootLayout({

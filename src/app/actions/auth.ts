@@ -32,7 +32,7 @@ export async function login(
     return { error: error.message };
   }
 
-  redirect("/overview");
+  redirect("/dashboard");
 }
 
 export async function signup(

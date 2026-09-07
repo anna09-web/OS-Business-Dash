@@ -2,23 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Package,
-  Briefcase,
-  LineChart,
-  Bot,
-  Settings,
-} from "lucide-react";
+import { LayoutDashboard, Wallet, ListChecks, Settings } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/reselling", label: "Reselling", icon: Package },
-  { href: "/agency", label: "Agency", icon: Briefcase },
-  { href: "/trading", label: "Trading", icon: LineChart },
-  { href: "/agents", label: "Agents", icon: Bot },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/finances", label: "Finances", icon: Wallet },
+  { href: "/tasks", label: "Tasks", icon: ListChecks },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -56,7 +47,7 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-sidebar-border p-3 text-xs text-muted-foreground">
-        Reselling · Agency · Trading
+        Your business, one dashboard.
       </div>
     </aside>
   );
