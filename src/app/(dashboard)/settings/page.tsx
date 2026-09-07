@@ -1,4 +1,4 @@
-import { KillSwitch } from "@/components/dashboard/kill-switch";
+import { AutomationsToggle } from "@/components/dashboard/automations-toggle";
 import { MfaEnrollment } from "@/components/dashboard/mfa-enrollment";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,7 @@ export default async function SettingsPage() {
   const supabase = await createClient();
   const { data: settings } = await supabase
     .from("system_settings")
-    .select("agents_paused, trading_mode")
+    .select("automations_paused")
     .eq("id", 1)
     .single();
 
@@ -42,35 +42,19 @@ export default async function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Kill switch</CardTitle>
+          <CardTitle>Automations</CardTitle>
         </CardHeader>
         <CardContent>
           {profile.role === "owner" ? (
-            <KillSwitch initialPaused={settings?.agents_paused ?? false} />
+            <AutomationsToggle initialPaused={settings?.automations_paused ?? false} />
           ) : (
             <p className="text-sm text-muted-foreground">
-              {settings?.agents_paused
-                ? "All agents are currently paused by the owner."
-                : "Agents are running normally."}{" "}
+              {settings?.automations_paused
+                ? "All automations are currently paused by the owner."
+                : "Automations are running normally."}{" "}
               Only the owner can use the kill switch.
             </p>
           )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Trading mode</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
-            Live trading requires a manual toggle, re-entered broker
-            credentials via a secrets vault, and a risk-rule confirmation
-            modal (Phase 7).
-          </span>
-          <Badge variant="outline" className="uppercase">
-            {settings?.trading_mode ?? "paper"}
-          </Badge>
         </CardContent>
       </Card>
     </div>
